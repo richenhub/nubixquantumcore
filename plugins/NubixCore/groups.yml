@@ -1,0 +1,197 @@
+guest:
+    index: 0
+    prefix: '§dИгрок'
+    perms:
+        - spawn
+        - rtp
+        - kit
+        - money
+        - pay
+        - paynub
+        - tell
+        - warp
+        - money
+        - help
+    chat: '§7{clan}§8(§7{prefix}§8) §7{username} §6→ §f{message}'
+    tag: '§7{clan}§8(§7{prefix}§8) §f{username}'
+    maxHomes: 1
+    price: 0
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+lite:
+    index: 10
+    prefix: Лайт
+    perms: []
+    price: 19
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+nubix:
+    index: 15
+    prefix: Нубик
+    perms: []
+    price: 35
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+chorus:
+    index: 20
+    prefix: Хорус
+    perms: []
+    price: 49
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+hero:
+    index: 25
+    prefix: Герой
+    perms: []
+    price: 89
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+elite:
+    index: 30
+    prefix: Элита
+    perms: []
+    price: 159
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+raider:
+    index: 35
+    prefix: Рейдер
+    perms: []
+    price: 249
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+epic:
+    index: 45
+    prefix: Эпик
+    perms: []
+    price: 389
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+angel:
+    index: 50
+    prefix: Архангел
+    perms: []
+    price: 569
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+myth:
+    index: 55
+    prefix: Миф
+    perms: []
+    price: 899
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+phantom:
+    index: 60
+    prefix: Фантом
+    perms: []
+    price: 1299
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+helper:
+    index: 65
+    prefix: Хелпер
+    perms: []
+    price: 1799
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+youtube:
+    index: 90
+    prefix: YouTube
+    perms: []
+    price: 1999
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+sponsor:
+    index: 95
+    prefix: Спонсор
+    perms: []
+    price: 2499
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+moder:
+    index: 98
+    prefix: Модератор
+    perms: []
+    price: 3499
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+kurator:
+    index: 99
+    prefix: Куратор
+    perms: []
+    price: 4999
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'
+richen:
+    index: 100
+    prefix: Основатель
+    perms: []
+    price: 14999
+    maxHomes: 1
+    maxBlocks: 1000
+    maxRegions: 2
+    aucSlots: 2
+    chat: '{clan}{prefix} {username} → {message}'
+    tag: '{clan}{prefix} {username}'

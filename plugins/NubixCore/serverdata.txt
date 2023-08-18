@@ -1,0 +1,1 @@
+a:2:{s:5:"warps";a:1:{s:4:"shop";a:3:{s:4:"name";s:4:"shop";s:4:"item";a:3:{s:2:"id";i:388;s:6:"damage";i:0;s:4:"name";s:20:"§eВарп: §fSHOP";}s:8:"position";s:38:"Position(level=world,x=226,y=69,z=881)";}}s:6:"spawns";a:1:{s:5:"world";s:48:"Position(level=world,x=225.4363,y=69,z=909.7466)";}}
