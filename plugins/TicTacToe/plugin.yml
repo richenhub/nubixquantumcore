@@ -1,0 +1,11 @@
+name: TicTacToe
+description: Крестики нолики
+main: richen\tictac
+load: POSTWORLD
+api: [
+  3.0.0
+]
+version: 2.0.0
+
+author: Richen
+website: http://vk.com/richen

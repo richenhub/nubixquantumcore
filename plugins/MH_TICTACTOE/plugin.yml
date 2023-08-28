@@ -1,0 +1,12 @@
+main: Richen\TicTacToe\TicTacMain
+version: 1.0.0
+api:
+- 1.14.0
+- 2.0.0
+- 3.0.0
+load: POSTWORLD
+
+name: MH_TICTACTOE
+author: Richen
+website: http://vk.com/richen
+description: "Крестики нолики"

@@ -42,6 +42,7 @@ class SimpleCommandMap implements CommandMap {
 		$this->register("pocketmine", new TimingsCommand("timings"));
 		$this->register("pocketmine", new StatusCommand("status"), null, true);
 		$this->register("pocketmine", new SummonCommand("summon"), null, true);
+		$this->register("pocketmine", new GamemodeCommand("gm"), null, true);
 	}
 
 
