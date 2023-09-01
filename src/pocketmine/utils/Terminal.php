@@ -119,7 +119,7 @@ abstract class Terminal{
 		self::$FORMAT_RESET = `tput sgr0`;
 
 		$colors = (int) `tput colors`;
-		if($colors > 8){
+		//if($colors > 8){
 			self::$COLOR_BLACK = $colors >= 256 ? `tput setaf 16` : `tput setaf 0`;
 			self::$COLOR_DARK_BLUE = $colors >= 256 ? `tput setaf 19` : `tput setaf 4`;
 			self::$COLOR_DARK_GREEN = $colors >= 256 ? `tput setaf 34` : `tput setaf 2`;
@@ -136,16 +136,16 @@ abstract class Terminal{
 			self::$COLOR_LIGHT_PURPLE = $colors >= 256 ? `tput setaf 207` : `tput setaf 13`;
 			self::$COLOR_YELLOW = $colors >= 256 ? `tput setaf 227` : `tput setaf 11`;
 			self::$COLOR_WHITE = $colors >= 256 ? `tput setaf 231` : `tput setaf 15`;
-		}else{
-			self::$COLOR_BLACK = self::$COLOR_DARK_GRAY = `tput setaf 0`;
-			self::$COLOR_RED = self::$COLOR_DARK_RED = `tput setaf 1`;
-			self::$COLOR_GREEN = self::$COLOR_DARK_GREEN = `tput setaf 2`;
-			self::$COLOR_YELLOW = self::$COLOR_GOLD = `tput setaf 3`;
-			self::$COLOR_BLUE = self::$COLOR_DARK_BLUE = `tput setaf 4`;
-			self::$COLOR_LIGHT_PURPLE = self::$COLOR_PURPLE = `tput setaf 5`;
-			self::$COLOR_AQUA = self::$COLOR_DARK_AQUA = `tput setaf 6`;
-			self::$COLOR_GRAY = self::$COLOR_WHITE = `tput setaf 7`;
-		}
+		// }else{
+		// 	self::$COLOR_BLACK = self::$COLOR_DARK_GRAY = `tput setaf 0`;
+		// 	self::$COLOR_RED = self::$COLOR_DARK_RED = `tput setaf 1`;
+		// 	self::$COLOR_GREEN = self::$COLOR_DARK_GREEN = `tput setaf 2`;
+		// 	self::$COLOR_YELLOW = self::$COLOR_GOLD = `tput setaf 3`;
+		// 	self::$COLOR_BLUE = self::$COLOR_DARK_BLUE = `tput setaf 4`;
+		// 	self::$COLOR_LIGHT_PURPLE = self::$COLOR_PURPLE = `tput setaf 5`;
+		// 	self::$COLOR_AQUA = self::$COLOR_DARK_AQUA = `tput setaf 6`;
+		// 	self::$COLOR_GRAY = self::$COLOR_WHITE = `tput setaf 7`;
+		// }
 	}
 
 	public static function init(?bool $enableFormatting = null) : void{

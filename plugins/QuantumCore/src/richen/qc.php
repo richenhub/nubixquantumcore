@@ -6,8 +6,10 @@ namespace richen;
 
 class qc extends \pocketmine\plugin\PluginBase
 {
+    use config\properties;
+    use helpers\helper;
+
     public function onEnable() {
-        $class = new helpers\classgenerator();
-        $class->generateCommand('spawn');
+        $this->log('Плагин запущен');
     }
 }

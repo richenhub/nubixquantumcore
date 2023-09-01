@@ -26,14 +26,17 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         "waiting"           => "§6Ожидание второго игрока %s...",
         "diamonds-popup"    => "§3[§bRich§eGames§3] §fДобыто алмазов: §e%s шт.",
         "diamonds-get"      => "§3[§bRich§eGames§3] §fВы добыли алмаз: §e%s",
-        "diamonds-result"   => "§3[§bRich§eGames§3] §fВы успели добыть: §e%s алмазов §7(§a+%s$\§7)",
-        "diamonds-stats"    => "§3[§bRich§eGames§3] §fВаша статистика по добыче §bалмазов§f:\n§7* §fПоследний результат: §e%s\n§7* §fДобыто алмазов §7(и валюты)§f: §a%s$\n§7* §fРекорд: §e%s §bалмазов\n§7* §fВы сыграли: §e%s раз\n§7* §fВ среднем добываете: §e%s шт."
+        "diamonds-result"   => "§3[§bRich§eGames§3] §fВы успели добыть: §e%s алмазов §7(§a+%s\$§7)",
+        "diamonds-stats"    => "§3[§bRich§eGames§3] §fВаша статистика по добыче §bалмазов§f:\n§7* §fПоследний результат: §e%s\n§7* §fДобыто алмазов §7(и валюты)§f: §a%s$\n§7* §fРекорд: §e%s §bалмазов\n§7* §fВы сыграли: §e%s раз\n§7* §fВ среднем добываете: §e%s шт.",
+        "tictac-stats"      => "Вы сыграли в крестики нолики: %s раз\n§7* §fПобед: §a%s§7/ §fПоражений: §6%s\n§7* §fВы в %s §fна §a%s$",
+        "no-money"          => "§cНедостаточно средств! §6Чтобы принять участие необходимо: §2%s$"
     ];
     public array $coordinates = [
         [215, 71, 905], [214, 71, 905], [213, 71, 905],
         [215, 70, 905], [214, 70, 905], [213, 70, 905],
         [215, 69, 905], [214, 69, 905], [213, 69, 905]
     ];
+    public int $price = 100;
     public array $tile = [];
     public int $gameCountdown = 60;
     public bool $gameStarted = false;
@@ -41,7 +44,7 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
     public ?\pocketmine\Player $currentPlayer = null;
     public ?\pocketmine\math\Vector3 $button = null;
     public ?\onebone\economyapi\EconomyAPI $economy = null;
-    public int $diamonds = 0;
+    public ?int $diamonds = null;
     public ?int $diamondIndex = null;
 
     const N = 'n';
@@ -50,7 +53,9 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
     const G = 'g';
     const D = 'd';
     public array $items = [];
-    public \pocketmine\utils\Config $bestconfig;
+    public array $sounds = [];
+    public ?\pocketmine\utils\Config $bestconfig = null;
+    public ?\pocketmine\utils\Config $tictacconfig = null;
 
     public function onEnable()
     {
@@ -68,6 +73,7 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         }
 
         $this->bestconfig = new \pocketmine\utils\Config($this->getDataFolder() . 'bestscore.yml', \pocketmine\utils\Config::YAML);
+        $this->tictacconfig = new \pocketmine\utils\Config($this->getDataFolder() . 'tictacscore.yml', \pocketmine\utils\Config::YAML);
 
         $this->button = $this->getVector3(212, 69, 905);
 
@@ -104,7 +110,40 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         }
     }
 
-    public function getScore(string $name) {
+    public function getScoreTicTac(string $name)
+    {
+        $name = mb_strtolower($name);
+        if ($this->tictacconfig->exists($name)) {
+            $data = json_decode($this->bestconfig->get($name), true);
+        } else {
+            $data = [
+                'amount' => 0,
+                'win' => 0,
+                'lose' => 0,
+                'attempt' => 0
+            ];
+        }
+
+        return $data;
+    }
+
+    public function addScoreTicTac(string $name, int $money, bool $win)
+    {
+        $name = mb_strtolower($name);
+        $data = $this->getScoreTicTac($name);
+        $newData = [
+            'amount' => $win ? $data['amount'] + $money : $data['amount'] - $money,
+            'win' => $data['win'] + (int) $win,
+            'lose' => $data['lose'] + (int) $win,
+            'attempt' => $data['attempt'] + 1
+        ];
+
+        $this->bestconfig->set($name, json_encode($newData));
+        $this->bestconfig->save();
+    }
+
+    public function getScore(string $name)
+    {
         $name = mb_strtolower($name);
         if ($this->bestconfig->exists($name)) {
             $data = json_decode($this->bestconfig->get($name), true);
@@ -120,7 +159,8 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         return $data;
     }
 
-    public function addScore(string $name, int $newscore) {
+    public function addScore(string $name, int $newscore)
+    {
         $name = mb_strtolower($name);
         $data = $this->getScore($name);
         $newData = [
@@ -134,7 +174,16 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         $this->bestconfig->save();
     }
 
-    public function getVector3(int $x, int $y, int $z, ?\pocketmine\level\Level $level = null) {
+    public function sendSound(\pocketmine\math\Vector3 $pos, string $sound)
+    {
+        $sound = '\pocketmine\\level\\sound\\' . $sound;
+        if (class_exists($sound)) {
+            $this->getServer()->getDefaultLevel()->addSound(new $sound($pos));
+        }
+    }
+
+    public function getVector3(int $x, int $y, int $z, ?\pocketmine\level\Level $level = null)
+    {
         if($level) {
             return new \pocketmine\level\Position($x, $y, $z, $level);
         } else {
@@ -142,7 +191,8 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         }
     }
 
-    public function isPlayer(\pocketmine\Player $player) {
+    public function isPlayer(\pocketmine\Player $player)
+    {
         foreach ($this->gamePlayers as $gamePlayer) {
             if ($gamePlayer->getName() === $player->getName()) {
                 return true;
@@ -151,7 +201,8 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         return false;
     }
 
-    public function onQuit(\pocketmine\event\player\PlayerQuitEvent $ev) {
+    public function onQuit(\pocketmine\event\player\PlayerQuitEvent $ev)
+    {
         $player = $ev->getPlayer();
 
         $gamePlayers = $this->gamePlayers;
@@ -167,7 +218,8 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         }
     }
 
-    public function joinGame(\pocketmine\Player $player) {
+    public function joinGame(\pocketmine\Player $player)
+    {
         if ($this->gameStarted) {
             return $this->messages['already-started'];
         }
@@ -180,6 +232,10 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
             return $this->messages['already-joined'];
         }
 
+        if ($this->economy->myMoney($player) < $this->price) {
+            return sprintf($this->messages['no-money'], $this->price);
+        }
+
         $this->gamePlayers[] = $player;
 
         $player->sendMessage($this->prefix . ' ' . sprintf($this->messages['joined'], count($this->gamePlayers)));
@@ -187,7 +243,8 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         if (count($this->gamePlayers) === 2) {
             $this->startGame();
         } else {
-            $this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends \pocketmine\scheduler\Task {
+            $this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends \pocketmine\scheduler\Task
+            {
                 public tictac $pl;
                 public int $countdown = 30;
                 
@@ -213,7 +270,7 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
                         $this->pl->addScore($player->getName(), $this->pl->diamonds);
                         $score = $this->pl->getScore($player->getName());
                         $avg = floor($score['amount'] / $score['attempt']);
-                        $player->sendMessage(sprintf($this->pl->messages['diamonds-stats'], $lastScore, $score['last'], $score['amount'], $score['best'], $score['attempt'], $avg));
+                        $player->sendMessage(sprintf($this->pl->messages['diamonds-stats'], $lastScore, $score['amount'], $score['best'], $score['attempt'], $avg));
                         $this->pl->diamonds = 0;
                         $this->pl->setItem($this->pl->tile[$this->pl->diamondIndex], $this->pl->items[tictac::G]);
                         $this->pl->diamondIndex = 0;
@@ -231,27 +288,35 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         }
     }
 
-    public function placeDiamond() {
+    public function placeDiamond()
+    {
         $index = array_rand($this->tile);
         $tile = $this->tile[$index];
         $this->diamondIndex = $index;
+
+        if (!$this->diamonds) {
+            $this->diamonds = 0;
+        }
 
         if ($tile instanceof \pocketmine\tile\ItemFrame) {
             $this->setItem($tile, $this->items[self::D]);
         }
     }
 
-    public function sendMessage(string $message, bool $tip = false, bool $prefix = true) {
+    public function sendMessage(string $message, bool $tip = false, bool $prefix = true)
+    {
         $method = $tip ? 'sendTip' : 'sendMessage';
         foreach ($this->gamePlayers as $player) {
             $player->$method(($prefix ? $this->prefix . ' ' : '') . $message);
         }
     }
 
-    public function startGame() {
+    public function startGame()
+    {
         if (count($this->gamePlayers) === 2 && !$this->gameStarted) {
             $this->gameStarted = true;
             $this->refil(true);
+
             shuffle($this->gamePlayers);
             
             $this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends \pocketmine\scheduler\Task {
@@ -302,20 +367,24 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
                     if (!$this->pl->currentPlayer) {
                         $this->pl->currentPlayer = $this->pl->gamePlayers[0];
                         $this->pl->sendMessage(sprintf($this->pl->messages['first-step'], $this->pl->currentPlayer->getName()));
+                        $this->pl->sendSound($this->pl->currentPlayer->asVector3(), 'ExpPickupSound');
                     }
                 }
             }, 20);
         }
     }
 
-    public function setItem(\pocketmine\tile\ItemFrame $tile, \pocketmine\item\Item $item) {
+    public function setItem(\pocketmine\tile\ItemFrame $tile, \pocketmine\item\Item $item)
+    {
         $enchantment = \pocketmine\item\enchantment\Enchantment::getEnchantment(0);
         $enchantment->setLevel(1);
         $item->addEnchantment($enchantment);
         $tile->setItem($item);
+        $this->sendSound($tile->asVector3(), 'ExpPickupSound');
     }
 
-    public function step(\pocketmine\Player $player, int $index) {
+    public function step(\pocketmine\Player $player, \pocketmine\tile\ItemFrame $tile)
+    {
         if ($this->gameStarted && !$this->isPlayer($player)) {
             return $player->sendTip($this->messages['already-started']);
         }
@@ -332,60 +401,72 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
             return $player->sendTip($this->messages['cant-step']);
         }
 
-        $tile = $this->tile[$index];
-
         $secondPlayer = $this->gamePlayers[0]->getName() === $player->getName() ? $this->gamePlayers[1] : $this->gamePlayers[0];
         
-        if ($tile instanceof \pocketmine\tile\ItemFrame) {
-            switch ($tile->getItem()->getId()) {
-                case $this->items[self::N]->getId():
-                    $this->sendMessage(sprintf($this->messages['step-success'], $player->getName(), $secondPlayer->getName()));
-                    $this->setItem($tile, array_search($player->getName(), [$this->gamePlayers[0]->getName(), $this->gamePlayers[1]->getName()]) === 0 ? $this->items[self::X] : $this->items[self::O]);
-                    $this->checkWinner();
-                    $this->currentPlayer = $secondPlayer;
+        switch ($tile->getItem()->getId()) {
+            case $this->items[self::N]->getId():
+                $this->sendMessage(sprintf($this->messages['step-success'], $player->getName(), $secondPlayer->getName()));
+                $this->setItem($tile, array_search($player->getName(), [$this->gamePlayers[0]->getName(), $this->gamePlayers[1]->getName()]) === 0 ? $this->items[self::X] : $this->items[self::O]);
+                $this->checkWinner();
+                $this->currentPlayer = $secondPlayer;
+                $this->sendSound($player->asVector3(), 'MilkSound');
 
-                    break;
-                
-                case $this->items[self::X]->getId():
-                    $player->sendMessage($this->prefix . ' ' . $this->messages['cant-step-here']);
+                break;
+            
+            case $this->items[self::X]->getId():
+            case $this->items[self::O]->getId():
+                $player->sendMessage($this->prefix . ' ' . $this->messages['cant-step-here']);
+                $this->sendSound($player->asVector3(), 'AnvilSound');
 
-                    break;
+                break;
+            
+            default:
 
-                case $this->items[self::O]->getId():
-                    $player->sendMessage($this->prefix . ' ' . $this->messages['cant-step-here']);
-
-                    break;
-                
-                default:
-
-                    break;
-            }
+                break;
         }
     }
 
-    public function onTap(\pocketmine\event\player\PlayerInteractEvent $ev) {
-        $player = $ev->getPlayer();
-        
+    public function getTileAtPos(\pocketmine\math\Vector3 $pos): ?\pocketmine\tile\ItemFrame
+    {
+        foreach ($this->tile as $index => $tile)
+        {
+            $vector3 = $tile->asVector3();
+
+            if ($vector3->equals($pos)) {
+                return $tile;
+            }
+        }
+
+        return null;
+    }
+
+    public function onBlock(\pocketmine\event\block\ItemFrameDropItemEvent $ev)
+    {
         $pos = $ev->getBlock()->asVector3();
 
-        // $player->sendMessage($pos->getX() . ' ' . $pos->getY() . ' ' . $pos->getZ());
+        if ($this->getTileAtPos($pos)) {
+            $ev->setCancelled();
+        }
+    }
+
+    public function onTap(\pocketmine\event\player\PlayerInteractEvent $ev)
+    {
+        $player = $ev->getPlayer();
+        $pos = $ev->getBlock()->asVector3();
 
         if ($this->button->equals($pos)) {
             $player->sendMessage($this->prefix . ' ' . $this->joinGame($player));
-        } else {
-            foreach ($this->tile as $index => $tile) {
-                $vector3 = $tile->asVector3();
-                if ($vector3->equals($pos)) {
-                    $ev->setCancelled();
-                    if ($tile instanceof \pocketmine\tile\ItemFrame && $tile->getItem()->getId() === $this->items[self::D]->getId()) {
-                        $this->setItem($tile, $this->items[self::G]);
-                        $this->placeDiamond();
-                        $this->diamonds++;
-                        $this->sendMessage(sprintf($this->messages['diamonds-get'], $this->diamonds, false), true);
-                    } else {
-                        $this->step($player, $index);
-                    }
-                    break;
+        }
+        else {
+            if ($tile = $this->getTileAtPos($pos)) {
+                $ev->setCancelled();
+                if ($tile instanceof \pocketmine\tile\ItemFrame && $tile->getItem()->getId() === $this->items[self::D]->getId()) {
+                    $this->setItem($tile, $this->items[self::G]);
+                    $this->placeDiamond();
+                    $this->diamonds++;
+                    $this->sendMessage(sprintf($this->messages['diamonds-get'], $this->diamonds, false), true);
+                } else {
+                    $this->step($player, $tile);
                 }
             }
         }
@@ -414,6 +495,7 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
         if ($this->areAllTilesFilled()) {
             $this->getServer()->broadcastMessage($this->prefix . ' ' . $this->messages['end']);
             $this->getServer()->broadcastMessage($this->prefix . ' ' . $this->messages['not-winners']);
+            $this->sendSound($this->tile[0]->asVector3(), 'FizzSound');
             $this->stopGame();
 
             return;
@@ -431,8 +513,31 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
             } else {
                 if ($this->isTileSame($tile1, $tile2, $tile3)) {
                     $winner = array_search($this->currentPlayer, $this->gamePlayers);
+
+                    $player1 = $this->gamePlayers[$winner];
+                    $player2 = $this->gamePlayers[$winner === 0 ? 1 : 0];
+
                     $this->getServer()->broadcastMessage($this->prefix . ' ' . $this->messages['end']);
-                    $this->getServer()->broadcastMessage($this->prefix . ' ' . sprintf($this->messages['winner'], $this->gamePlayers[$winner]->getName(), $this->gamePlayers[$winner === 0 ? 1 : 0]->getName()));
+                    $this->getServer()->broadcastMessage($this->prefix . ' ' . sprintf($this->messages['winner'], $player1->getName(), $player2->getName()));
+
+                    $money = $this->price;
+
+                    $this->addScoreTicTac($player1->getName(), $money, true);
+                    $this->addScoreTicTac($player2->getName(), $money, false);
+
+                    $this->economy->addMoney($player1, $money);
+                    $this->economy->reduceMoney($player2, $money);
+
+                    $stats1 = $this->getScoreTicTac($player1->getName());
+                    $stats2 = $this->getScoreTicTac($player2->getName());
+
+                    $status1 = $stats1['amount'] >= 0 ? '§aплюсе' : '§cминусе';
+                    $status2 = $stats2['amount'] >= 0 ? '§aплюсе' : '§cминусе';
+
+                    $player1->sendMessage($this->prefix . ' ' . sprintf($this->messages['tictac-stats'], $stats1['attempt'], $stats1['win'], $stats1['lose'], $status1, $stats1['money']));
+                    $player2->sendMessage($this->prefix . ' ' . sprintf($this->messages['tictac-stats'], $stats2['attempt'], $stats2['win'], $stats2['lose'], $status2, $stats2['money']));
+
+                    $this->sendSound($this->tile[0]->asVector3(), 'LevelUpSound');
                     $this->stopGame();
                     break;
                 }
@@ -484,6 +589,7 @@ class tictac extends \pocketmine\plugin\PluginBase implements \pocketmine\event\
                 }
 
                 $tile = $this->pl->tile[$this->currentTileIndex];
+
                 $this->pl->setItem($tile, $this->isStart ? $this->pl->items[tictac::N] : $this->pl->items[tictac::G]);
 
                 foreach ($this->pl->tile as $tile) {
