@@ -13,8 +13,14 @@ class event extends \richen\managers\manager implements \pocketmine\event\Listen
     {
         $player = $ev->getPlayer();
 
-        if (!$this->easyauth()->isAuth($player)) {
+        if (!$this->easyauth()->isRegistered($player)) {
             
+
+            return;
+        }
+
+        if (!$this->easyauth()->isAuth($player)) {
+
         }
     }
 

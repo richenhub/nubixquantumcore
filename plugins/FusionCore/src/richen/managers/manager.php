@@ -4,6 +4,7 @@ namespace richen\managers;
 
 class manager
 {
+
     public function core(): \richen\fc
     {
         if (!$this->fc) {
@@ -18,6 +19,15 @@ class manager
         $this->registerManagers();
     }
 
+    public function isCustomPlayer(\pocketmine\Player $player): bool
+    {
+        return $player instanceof \richen\custom\customplayer;
+    }
+
+    /**
+     * Managers
+     */
+
     private ?database $database = null;
     private ?easyauth $easyauth = null;
 
@@ -25,11 +35,6 @@ class manager
     {
         $this->database = new database();
         $this->easyauth = new easyauth();
-    }
-
-    public function isCustomPlayer(\pocketmine\Player $player): bool
-    {
-        return $player instanceof \richen\custom\customplayer;
     }
 
     public function database(): \richen\managers\database
@@ -40,5 +45,10 @@ class manager
     public function easyauth(): \richen\managers\easyauth
     {
         return $this->easyauth;
+    }
+
+    public function createObject(array $array): ?\richen\engine\objectdata
+    {
+        return new \richen\engine\objectdata($array);
     }
 }
